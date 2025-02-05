@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Memory Game</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(10, 120px);
+  grid-gap: 10px;
+}
+
+.card {
+  width: 120px;
+  height: 120px;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative; /* For positioning the number */
+}
+
+.card-inner {
+  position: relative; /* For 3D transform and z-index */
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.card-front {
+  background-color: #57155c;
+  z-index: 1; /* Ensure card front is above card number */
+}
+
+.card-back {
+  background-color: #fff;
+  transform: rotateY(180deg);
+}
+
+.card-back img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.card-number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 20px;
+  color: red; /* Or a color that contrasts with the card front */
+  user-select: none;
+  z-index: 2; /* Ensure card number is above card front */
+}
+</style>
+</head>
+<body>
+
+<div class="game-board">
+</div>
+
+<script>
+const gameBoard = document.querySelector('.game-board');
+let cards = [];
+let flippedCards = [];
+let lockBoard = false;
+
+const images = [
+  "image1.png", "image1.png", "image2.png", "image2.png", "image3.png", "image3.png",
+  "image4.png", "image4.png", "image5.png", "image5.png", "image6.png", "image6.png",
+  "image7.png", "image7.png", "image8.png", "image8.png", "image9.png", "image9.png",
+  "image10.png", "image10.png", "image11.png", "image11.png", "image12.png", "image12.png",
+  "image13.png", "image13.png", "image14.png", "image14.png", "image15.png", "image15.png",
+  "image16.png", "image16.png", "image17.png", "image17.png", "image18.png", "image18.png",
+  "image19.png", "image19.png", "image20.png", "image20.png", "image21.png", "image21.png",
+  "image22.png", "image22.png", "image23.png", "image23.png", "image24.png", "image24.png",
+  "image25.png", "image25.png"
+];
+
+// Ensure images array has 50 elements (25 pairs)
+while (images.length < 50) {
+  const randomIndex = Math.floor(Math.random() * images.length);
+  images.push(images[randomIndex]);
+}
+
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+shuffle(images);
+
+for (let i = 0; i < 50; i++) {
+  const card = document.createElement('div');
+  card.classList.add('card');
+
+  const cardInner = document.createElement('div');
+  cardInner.classList.add('card-inner');
+
+  const cardNumber = document.createElement('span');
+  cardNumber.classList.add('card-number');
+  cardNumber.textContent = i + 1;
+  cardInner.appendChild(cardNumber); // Add number to cardInner FIRST
+
+  const cardFront = document.createElement('div');
+  cardFront.classList.add('card-front');
+  cardInner.appendChild(cardFront); // THEN add cardFront
+
+  const cardBack = document.createElement('div');
+  cardBack.classList.add('card-back');
+  const img = document.createElement('img');
+  img.src = images[i];
+  img.alt = `Card ${i + 1}`;
+  cardBack.appendChild(img);
+  cardInner.appendChild(cardBack);
+
+  card.appendChild(cardInner);
+  gameBoard.appendChild(card);
+  cards.push(card);
+
+  card.addEventListener('click', flipCard);
+}
+
+function flipCard() {
+  if (lockBoard) return;
+  if (this === flippedCards[0]) return;
+
+  this.classList.add('flipped');
+  flippedCards.push(this);
+
+  if (flippedCards.length === 2) {
+    checkForMatch();
+  }
+}
+
+function checkForMatch() {
+  const card1 = flippedCards[0].querySelector('.card-back img').src;
+  const card2 = flippedCards[1].querySelector('.card-back img').src;
+
+  if (card1 === card2) {
+    flippedCards[0].removeEventListener('click', flipCard);
+    flippedCards[1].removeEventListener('click', flipCard);
+    resetFlippedCards();
+  } else {
+    lockBoard = true;
+    setTimeout(() => {
+      flippedCards[0].classList.remove('flipped');
+      flippedCards[1].classList.remove('flipped');
+      resetFlippedCards();
+      lockBoard = false;
+    }, 1000);
+  }
+}
+
+function resetFlippedCards() {
+  flippedCards = [];
+}
+</script>
+
+</body>
+</html>
