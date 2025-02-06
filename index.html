@@ -16,7 +16,7 @@ body {
   display: grid;
   grid-template-columns: repeat(10, 120px);
   grid-gap: 10px;
-  display: none; /* Initially hidden */
+  display: none;
 }
 
 .card {
@@ -65,16 +65,6 @@ body {
   max-height: 90%;
 }
 
-.card-number {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  font-size: 20px;
-  color: red;
-  user-select: none;
-  z-index: 2;
-}
-
 #message {
   position: absolute;
   top: 50%;
@@ -85,7 +75,7 @@ body {
   color: white;
   padding: 20px;
   border-radius: 10px;
-  display: none; /* Initially hidden */
+  display: none;
 }
 
 #start-button {
@@ -114,12 +104,14 @@ body {
 
 <script>
 const gameBoard = document.querySelector('.game-board');
+const message = document.getElementById('message');
+const startButton = document.getElementById('start-button');
 let cards = [];
 let flippedCards = [];
 let lockBoard = false;
 let revealed = false;
-const startButton = document.getElementById('start-button');
 
+// Image paths (REPLACE with your actual image paths)
 const images = [
   "image1.png", "image1.png", "image2.png", "image2.png", "image3.png", "image3.png",
   "image4.png", "image4.png", "image5.png", "image5.png", "image6.png", "image6.png",
@@ -132,11 +124,6 @@ const images = [
   "image25.png", "image25.png"
 ];
 
-while (images.length < 50) {
-  const randomIndex = Math.floor(Math.random() * images.length);
-  images.push(images[randomIndex]);
-}
-
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -146,17 +133,12 @@ function shuffle(array) {
 
 shuffle(images);
 
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < images.length; i++) {
   const card = document.createElement('div');
   card.classList.add('card');
 
   const cardInner = document.createElement('div');
   cardInner.classList.add('card-inner');
-
-  const cardNumber = document.createElement('span');
-  cardNumber.classList.add('card-number');
-  cardNumber.textContent = i + 1;
-  cardInner.appendChild(cardNumber);
 
   const cardFront = document.createElement('div');
   cardFront.classList.add('card-front');
@@ -180,23 +162,22 @@ for (let i = 0; i < 50; i++) {
 startButton.addEventListener('click', () => {
   startButton.style.display = 'none';
   gameBoard.style.display = 'grid';
-  document.getElementById('message').style.display = 'block';
+  message.style.display = 'block';
+  message.textContent = "Memorize the cards!";
 
   setTimeout(() => {
     cards.forEach(card => card.classList.add('flipped'));
     revealed = true;
     setTimeout(() => {
       cards.forEach(card => card.classList.remove('flipped'));
-      document.getElementById('message').style.display = 'none';
+      message.style.display = 'none';
       revealed = false;
-    }, 5000);
-  }, 1000);
+    }, 10000); // 10-second reveal
+  }, 1000); // 1-second delay before reveal
 });
 
 function flipCard() {
-  if (lockBoard || revealed) return;
-  if (this === flippedCards[0]) return;
-
+  if (lockBoard || revealed || this === flippedCards[0]) return;
   this.classList.add('flipped');
   flippedCards.push(this);
 
@@ -213,6 +194,14 @@ function checkForMatch() {
     flippedCards[0].removeEventListener('click', flipCard);
     flippedCards[1].removeEventListener('click', flipCard);
     resetFlippedCards();
+
+    if (cards.every(card => card.classList.contains('flipped'))) {
+      message.style.display = 'block';
+      message.textContent = "You won!";
+      setTimeout(() => {
+        location.reload(); // Reload the game after a delay
+      }, 3000);
+    }
   } else {
     lockBoard = true;
     setTimeout(() => {
