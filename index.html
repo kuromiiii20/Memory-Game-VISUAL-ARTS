@@ -16,8 +16,7 @@ body {
   display: grid;
   grid-template-columns: repeat(10, 120px);
   grid-gap: 10px;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
+  display: none; /* Initially hidden */
 }
 
 .card {
@@ -76,49 +75,50 @@ body {
   z-index: 2;
 }
 
+#message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: none; /* Initially hidden */
+}
+
 #start-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
   padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #4CAF50;
+  background-color: #861879;
   border: none;
   color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
   border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-#start-button:hover {
-  background-color: #45a049;
-}
-
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
 }
 </style>
 </head>
 <body>
 
-<div id="overlay">
-  <button id="start-button">Start Game</button>
-</div>
-
-<div class="game-board">
-</div>
+<div class="game-board"></div>
+<div id="message">Memorize the cards!</div>
+<button id="start-button">Start Memory Game</button>
 
 <script>
 const gameBoard = document.querySelector('.game-board');
 let cards = [];
 let flippedCards = [];
 let lockBoard = false;
+let revealed = false;
+const startButton = document.getElementById('start-button');
 
 const images = [
   "image1.png", "image1.png", "image2.png", "image2.png", "image3.png", "image3.png",
@@ -132,12 +132,10 @@ const images = [
   "image25.png", "image25.png"
 ];
 
-// Ensure images array has 50 elements (25 pairs)
 while (images.length < 50) {
   const randomIndex = Math.floor(Math.random() * images.length);
   images.push(images[randomIndex]);
 }
-
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -158,11 +156,11 @@ for (let i = 0; i < 50; i++) {
   const cardNumber = document.createElement('span');
   cardNumber.classList.add('card-number');
   cardNumber.textContent = i + 1;
-  cardInner.appendChild(cardNumber); // Add number to cardInner FIRST
+  cardInner.appendChild(cardNumber);
 
   const cardFront = document.createElement('div');
   cardFront.classList.add('card-front');
-  cardInner.appendChild(cardFront); // THEN add cardFront
+  cardInner.appendChild(cardFront);
 
   const cardBack = document.createElement('div');
   cardBack.classList.add('card-back');
@@ -179,29 +177,24 @@ for (let i = 0; i < 50; i++) {
   card.addEventListener('click', flipCard);
 }
 
-const startButton = document.getElementById('start-button');
-const overlay = document.getElementById('overlay');
-const gameBoard = document.querySelector('.game-board');
-
-startButton.addEventListener('click', startGame);
-
-function startGame() {
-  overlay.style.display = 'none';
-  gameBoard.style.opacity = 1;
-
-  revealCards();
-}
-
-function revealCards() {
-  cards.forEach(card => card.classList.add('flipped'));
+startButton.addEventListener('click', () => {
+  startButton.style.display = 'none';
+  gameBoard.style.display = 'grid';
+  document.getElementById('message').style.display = 'block';
 
   setTimeout(() => {
-    cards.forEach(card => card.classList.remove('flipped'));
-  }, 6000); // 6-second delay
-}
+    cards.forEach(card => card.classList.add('flipped'));
+    revealed = true;
+    setTimeout(() => {
+      cards.forEach(card => card.classList.remove('flipped'));
+      document.getElementById('message').style.display = 'none';
+      revealed = false;
+    }, 5000);
+  }, 1000);
+});
 
 function flipCard() {
-  if (lockBoard) return;
+  if (lockBoard || revealed) return;
   if (this === flippedCards[0]) return;
 
   this.classList.add('flipped');
