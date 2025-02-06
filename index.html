@@ -65,6 +65,16 @@ body {
   max-height: 90%;
 }
 
+.card-number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 20px;
+  color: red;
+  user-select: none;
+  z-index: 2;
+}
+
 #message {
   position: absolute;
   top: 50%;
@@ -151,6 +161,11 @@ for (let i = 0; i < images.length; i++) {
   img.alt = `Card ${i + 1}`;
   cardBack.appendChild(img);
   cardInner.appendChild(cardBack);
+
+  const cardNumber = document.createElement('span');
+  cardNumber.classList.add('card-number');
+  cardNumber.textContent = i + 1;
+  cardInner.appendChild(cardNumber);
 
   card.appendChild(cardInner);
   gameBoard.appendChild(card);
